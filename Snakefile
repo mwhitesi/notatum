@@ -1,15 +1,12 @@
+import source.io.dataloader as dl
 
-import source.io.Transformer
+DRUGS=['CTZ', 'CTX', 'AMP', 'AMX', 'AMC', 'TZP', 'CXM', 'CET', 'GEN', 'TBM', 'TMP', 'CIP']
 
-DRUGS=['']
-
-rule raw_data_transform:
+rule transform:
     input:
-        "data/raw/Metadata.csv",
-        "data/raw/AccessoryGenes.csv"
+        "data/raw/ecoli/Metadata.csv",
+        "data/raw/ecoli/AccessoryGene.csv"
     output:
-        "data/interim/ecoli/gene.csv",
-        expand("data/interim/ecoli/drugs/{drug}.csv", drug=DRUGS)
+        expand("data/interim/ecoli/drugs/{drug}.npz", drug=DRUGS)
     run:
-        transformer = Transformer()
-        transformer.transform(input[0], input[1], output)
+        dl.transform(input, output)

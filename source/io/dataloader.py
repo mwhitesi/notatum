@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import re
+import torch
 
 # class GeneDataset(gluon.data.ArrayDataset):
 #
@@ -30,12 +31,12 @@ def transform(input, output):
       'R': 1
     }
 
-    pattern = re.compile("(\w{3}).npz$")
+    pattern = re.compile("(\w{3}).pt$")
 
     for f in output:
-        m = pattern.match(f, len(f)-7)
+        m = pattern.match(f, len(f)-6)
         d = m.group(1)
-        print(d)
+        # print(d)
         y = metadf[d]
         omit = pd.isnull(y)
         isolates = all_isolates[~omit]
@@ -50,7 +51,10 @@ def transform(input, output):
         # print(isolates[0])
         # print(isolates.dtype)
 
-        np.savez(f, y=ylabels, X=X, isolates=isolates)
+        y_tensor = torch.from_numpy(ylabels)
+        X_tensor = torch.from_numpy(X)
+
+        torch.save({'y': y_tensor, 'X': X_tensor, 'isolates': isolates}, f)
 
 
 if __name__ == "__main__":
@@ -60,8 +64,8 @@ if __name__ == "__main__":
         "data/raw/ecoli/AccessoryGene.csv"
     ]
     output = [
-        "data/interim/ecoli/drugs/CTX.npz",
-        "data/interim/ecoli/drugs/AMP.npz",
-        "data/interim/ecoli/drugs/AMX.npz"
+        "data/interim/ecoli/drugs/CTX.pt",
+        "data/interim/ecoli/drugs/AMP.pt",
+        "data/interim/ecoli/drugs/AMX.pt"
     ]
     transform(input, output)

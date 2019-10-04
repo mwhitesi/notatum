@@ -1,8 +1,12 @@
 import pandas as pd
 import numpy as np
+import os
 import re
 import torch
 import torch.utils.data as data_utils
+import zipfile
+import zlib
+
 
 class IndexTensorDataset:
     """
@@ -17,7 +21,6 @@ class IndexTensorDataset:
         self.tensors = tensors
 
     def __getitem__(self, index):
-        #t = tuple([tensor[index] for tensor in self.tensors].append(index))
         t = [tensor[index] for tensor in self.tensors]
         t.append(index)
         return(tuple(t))
@@ -35,7 +38,7 @@ class GeneDataset:
     """
 
     def __init__(self, data_file, batch_size, test_split, shuffle_dataset,
-                 random_seed):
+                 random_seed, validation_split=0):
 
         # Load tensor data
         data = torch.load(data_file)
@@ -108,15 +111,23 @@ def transform(input, output):
         torch.save({'y': y_tensor, 'X': X_tensor, 'isolates': isolates}, f)
 
 
+def align(zipf, transl=True):
+    """
+        Iterate through pangenome clusters, optionally translate, and align
+
+    """
+    with zipfile.ZipFile(zipf, "r") as zh:
+        i = 0
+        for z in zh.infolist():
+            if not z.is_dir():
+                gz = zh.read(z.filename)
+                fn = zlib.decompress(gz, 15 + 16)
+                
+            if i > 3:
+                break
+            i+=1
+
+
 if __name__ == "__main__":
 
-    input = [
-        "data/raw/ecoli/Metadata.csv",
-        "data/raw/ecoli/AccessoryGene.csv"
-    ]
-    output = [
-        "data/interim/ecoli/drugs/CTX.pt",
-        "data/interim/ecoli/drugs/AMP.pt",
-        "data/interim/ecoli/drugs/AMX.pt"
-    ]
-    transform(input, output)
+    align("data/raw/ecoli/pan_genome_sequences.zip")

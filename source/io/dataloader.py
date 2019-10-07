@@ -1,11 +1,18 @@
+import gzip
 import pandas as pd
 import numpy as np
+import io
 import os
 import re
 import torch
 import torch.utils.data as data_utils
+import subprocess
 import zipfile
 import zlib
+
+from Bio import AlignIO
+from Bio.SeqIO.FastaIO import FastaIterator, as_fasta
+from Bio.Align.Applications import MuscleCommandline
 
 
 class IndexTensorDataset:
@@ -111,23 +118,56 @@ def transform(input, output):
         torch.save({'y': y_tensor, 'X': X_tensor, 'isolates': isolates}, f)
 
 
-def align(zipf, transl=True):
+
+
+def align(fh, transl=True):
     """
-        Iterate through pangenome clusters, optionally translate, and align
+        Translate and align pangenome cluster fasta file
+
+    """
+
+    align_exe = MuscleCommandline(
+        r'C:\Users\matthewwhiteside\workspace\b_ecoli\muscle\muscle3.8.31_i86win32.exe',
+        clwstrict=True)
+
+    # Align on stdin/stdout
+    proc = subprocess.Popen(str(align_exe),
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        shell=False)
+
+    sequences = FastaIterator(fh)
+    inp = [ ">"+record.id+"\n"+str(record.translate(table="Bacterial").seq)+"\n" for record in sequences ]
+    inp = "".join(inp)
+
+    align, err = proc.communicate(input=inp)
+
+    return(align)
+
+
+def decompress(zipf, transl=True):
+    """
+        Decompress gzipped fasta files in zip archive
 
     """
     with zipfile.ZipFile(zipf, "r") as zh:
         i = 0
         for z in zh.infolist():
             if not z.is_dir():
+                print(z.filename)
                 gz = zh.read(z.filename)
-                fn = zlib.decompress(gz, 15 + 16)
-                
-            if i > 3:
-                break
-            i+=1
+                fh = io.BytesIO(gz)
+                with gzip.open(fh, 'rb') as gz:
+                    fn = gz.read()
+                    yield fn.decode('utf-8')
+                    break
 
 
 if __name__ == "__main__":
 
-    align("data/raw/ecoli/pan_genome_sequences.zip")
+
+        for fn in decompress("data/raw/ecoli/pan_genome_sequences.zip"):
+            with io.StringIO(fn) as fh:
+                print(align(fh))

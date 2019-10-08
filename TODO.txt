@@ -1,0 +1,6 @@
+Next Steps:
+1. Extract one gz from zip
+2. Extract gz
+3. MSA
+4. Load MSA, https://stackoverflow.com/questions/17116814/pandas-how-do-i-split-text-in-a-column-into-multiple-rows/21032532
+5. Iterate columns -> a. filter columns based on mutation frequency, b. collect identical columns

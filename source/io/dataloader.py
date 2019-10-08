@@ -162,12 +162,12 @@ def decompress(zipf, transl=True):
                 with gzip.open(fh, 'rb') as gz:
                     fn = gz.read()
                     yield fn.decode('utf-8')
-                    break
 
 
 if __name__ == "__main__":
 
-
-        for fn in decompress("data/raw/ecoli/pan_genome_sequences.zip"):
-            with io.StringIO(fn) as fh:
-                print(align(fh))
+    for fn in decompress("data/raw/ecoli/pan_genome_sequences.zip"):
+        with io.StringIO(fn) as ifh:
+            with open('data/tmp/test.aln', 'w') as ofh:
+                ofh.write(align(ifh))
+                break

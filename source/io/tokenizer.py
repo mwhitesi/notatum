@@ -32,7 +32,8 @@ class OrthologTokenizer:
         _, p, _ = self.rle(col_patterns)
 
         # Output block variant ids
-        i = 0
+        # Save 0 for missing -- if genome is missing gene it gets 0 for all blocks (i don't want to use all gaps in pattern deconvolution step)
+        i = 1
         bk_vars = freqs.iloc[:,p]
         inc = bk_vars.max(axis=0)
         inc = inc.cumsum() + i
@@ -59,14 +60,15 @@ class OrthologTokenizer:
         return(z, p, ia[i])
 
 
-
-
 if __name__ == "__main__":
 
     ai = AlignIO.parse('data/tmp/test.aln', 'clustal')
+
     msa = next(ai)
     gn = [record.id for record in msa]
     aln = [str(record.seq) for record in msa]
 
     ot = OrthologTokenizer()
-    ot.encode_ortholog(gn, aln)
+    vocab, ctx_len, vocab_len = ot.encode_ortholog(gn, aln)
+
+    

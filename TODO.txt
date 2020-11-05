@@ -1,6 +1,16 @@
-Next Steps:
-1. Extract one gz from zip
-2. Extract gz
-3. MSA
-4. Load MSA, https://stackoverflow.com/questions/17116814/pandas-how-do-i-split-text-in-a-column-into-multiple-rows/21032532
-5. Iterate columns -> a. filter columns based on mutation frequency, b. collect identical columns
+1. Save each tokenized ortholog as feather
+2. Build CBOW embedding model for each ortholog
+3. Build autoencoder embedding model for each ortholog
+ - This is similar to 2
+ - Embedding mobel will be a 'pass-through' that gets trained during autoencoding
+   training
+ - It will use all inputs, while 2 might only use a subset of inputs
+4. Compare 2 & 3
+
+
+Plan:
+0. Align all pangenome gene sequences (Snakemake)
+0.1 Tokenize all pangenome gene sequences (Snakemake)
+1. Build genome-level embedding/autoencoder using gene / presence absence as input
+2. Build gene-level embedding/autoencoder using variant block ids as input
+3. Build transformer using 1. as main input, and 2. as positional enocding
